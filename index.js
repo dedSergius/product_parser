@@ -19,8 +19,8 @@ const selectors = {
   name: '[class^="Title_title"]',
 };
 
-let getProductInfo = async (url, region = undefined, index) => {
-  console.log(`Parsing page ${index}`);
+let getProductInfo = async (url, region = undefined, index, count) => {
+  console.log(`Parsing page ${index} from ${count}`);
   console.log(`Launching browser...`);
   const browser = await puppeteer.launch({
     headless: true,
@@ -62,8 +62,8 @@ let getProductInfo = async (url, region = undefined, index) => {
     });
     console.log(`Region not selected. Used home region "${region}".`);
   }
-  const productDir = path.resolve(__dirname, RESULTS_DIR, url.split('/').pop());
-  createDir(productDir);
+  const productDir = path.resolve(__dirname, RESULTS_DIR, region.replaceAll('.', ' ').replaceAll(' ', '_'), url.split('/').pop());
+  await createDir(productDir);
   const nameElement = await page.$(selectors.name);
   const name = await nameElement.evaluate((node) => {
     return node.innerText.trim();
@@ -147,21 +147,21 @@ let getRegions = () =>
     ? [process.argv[3]]
     : readLine(path.resolve(__dirname, REGIONS_FILE));
 
-let createDir = (dir) => {
+let createDir = async (dir) => {
   if (!fs.existsSync(path.resolve(__dirname, dir))) {
-    mkdir(path.resolve(__dirname, dir));
+    await mkdir(path.resolve(__dirname, dir), { recursive: true });
   }
 };
 
 let main = async () => {
-  createDir(RESULTS_DIR);
+  await createDir(RESULTS_DIR);
   let urls = getUrls();
   let regions = getRegions();
   if (!urls.length) {
     throw 'No URL to parse. Specify the url as the first argument when starting the program or the list of urls in the urls.txt file separated by newline.';
   }
   for (let i = 0; i < urls.length; i++) {
-    await getProductInfo(urls[i], regions ? regions[i] : undefined, i + 1);
+    await getProductInfo(urls[i], regions ? regions[i] : undefined, i + 1, urls.length);
   }
   console.log('Parsing done.');
 };
