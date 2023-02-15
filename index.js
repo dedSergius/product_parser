@@ -62,7 +62,12 @@ let getProductInfo = async (url, region = undefined, index, count) => {
     });
     console.log(`Region not selected. Used home region "${region}".`);
   }
-  const productDir = path.resolve(__dirname, RESULTS_DIR, region.replaceAll('.', ' ').replaceAll(' ', '_'), url.split('/').pop());
+  const productDir = path.resolve(
+    __dirname,
+    RESULTS_DIR,
+    region.replaceAll('.', ' ').replaceAll(' ', '_'),
+    url.split('/').pop()
+  );
   await createDir(productDir);
   const nameElement = await page.$(selectors.name);
   const name = await nameElement.evaluate((node) => {
@@ -161,7 +166,12 @@ let main = async () => {
     throw 'No URL to parse. Specify the url as the first argument when starting the program or the list of urls in the urls.txt file separated by newline.';
   }
   for (let i = 0; i < urls.length; i++) {
-    await getProductInfo(urls[i], regions ? regions[i] : undefined, i + 1, urls.length);
+    await getProductInfo(
+      urls[i],
+      regions ? regions[i] : undefined,
+      i + 1,
+      urls.length
+    );
   }
   console.log('Parsing done.');
 };
